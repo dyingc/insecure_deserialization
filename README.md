@@ -114,8 +114,8 @@ root@Attacker:/opt/utils/malware# curl -X POST --data '{"Name": "abcde"' --heade
         "error":"Bad Request",
         "message":"JSON parse error: not match : - \u001A, info : pos 16, json : {\"Name\": \"abcde\"; nested exception is com.alibaba.fastjson.JSONException: not match : - \u001A, info : pos 16, json : {\"Name\": \"abcde\"",
         "path":"/"
-}root@Attacker:/opt/utils/malware# 
-
+}
+root@Attacker:/opt/utils/malware# 
 ```
 
 From the above output, we can see the error message is given by `com.alibaba.fastjson.JSONException`
