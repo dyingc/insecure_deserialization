@@ -114,8 +114,8 @@ root@Attacker:/opt/utils/malware# curl -X POST --data '{"Name": "abcde"' --heade
         "error":"Bad Request",
         "message":"JSON parse error: not match : - \u001A, info : pos 16, json : {\"Name\": \"abcde\"; nested exception is com.alibaba.fastjson.JSONException: not match : - \u001A, info : pos 16, json : {\"Name\": \"abcde\"",
         "path":"/"
-}
-root@Attacker:/opt/utils/malware# 
+}root@Attacker:/opt/utils/malware# 
+
 ```
 
 From the above output, we can see the error message is given by `com.alibaba.fastjson.JSONException`
@@ -171,7 +171,7 @@ Inside the `connect()`, the remote JNDI will be connected and the remote malicou
 
 #### Introduction of the demo
 
-1. It's only a demo attack and thus there're pretty much simplified settings
+1. It's only a demo attack and thus there're pretty many simplified settings
 2. The environment employ Docker compose containing two containers: one for the victim, a web server and an attacker. The demo has been uploaded to GitHub at: https://github.com/dyingc/insecure_deserialization.git
 3. The server runs a vulnerable application with `fastjson 1.2.45`
 4. The attacker is used to demo an infected node, like a reckless administrator who happens to open an email with malicious payload
@@ -188,18 +188,17 @@ Inside the `connect()`, the remote JNDI will be connected and the remote malicou
 
 ![[C47B8CB3-FA94-4279-B002-AE08CF201BAC.jpeg]]
 
-1. Attacker generates *client-specific-key-pair*, identified by ***TargetID***, using RSA-2048, and compact them (and some other files) into a compressed `attacking_package.zip`
-2. Attacker attacks the victim node, with the vulnerable `fastjson` installed, to trigger the `RCE` of `Attacker.class` on the attacker side
-	1. Attacker starts a JNDI (LDAP) lookup service which will redirect lookup for `Attacker` to a local HTTP server
-	2. Attacker starts a simple HTTP server to accept redirected lookup request, in turn to serve the malicious `Attacker.class` Java class
-	3. Victim `blindly` trusts the client / attacker input, eventually loads the `Attacker.class` by looking up the `Attacker` against the JNDI/LDAP service, both of which are designated by the attacker input
-3. The victim, while running `Attacker.class`, downloads `attacking_package.zip` served by a malicious HTTP service (launched using python3) running on the attacker node
-4. The malicious code inside the `attacking_package.zip` is executed on the victim to encrypt the **/tmp/test/myfile**
+1. Attacker ***A*** sends the malicious JSON payload to ***F***, the victim node who has the vulnerable `fastjson` installed
+2. ***F***, the victim, tries to deserialize some *byte-stream* into `com.sun.rowset.JdbcRowSetImpl`
+3. ***F*** does a remote LDAP lookup, trying to locate the *byte-stream*. This LDAP lookup service is started on ***L***, hosted on the Attacker node
+4. ***L*** redirects the lookup to a simple HTTP service, ***H***, from which a malicious `Attacker.class` is served
+5. ***F***, the victim, blindly and happily retrieves the malickous class bytes and loaded into its memory, resulting the execution of the *static block* defined in this `Attacker.class`
+6. Driven by `Attacker.class`, ***F*** downloads more *supporting files* (`attacking_package.zip`) from the simple HTTP service, hosted on the attacker node
+7. The downloaded and extracted code furtherly encrypts the ***F***'s **/tmp/test/myfile** using RSA `hybrid` algorithm:
 	1. A random AES 128 key is generated
 	2. The AES key is used to encrypt the file
 	3. The AES key is encrypted by the public key inside the zip file, using RSA-2048
 	4. The AES key is removed
-
 
 - Recover
 
@@ -339,3 +338,4 @@ The only safe architectural pattern is not to accept serialized objects from unt
 * Log deserialization exceptions and failures, such as where the incoming type is not the expected type, or the deserialization throws exceptions.  
 * Restricting or monitoring incoming and outgoing network connectivity from containers or servers that deserialize.  
 * Monitoring deserialization, alerting if a user deserializes constantly.
+
